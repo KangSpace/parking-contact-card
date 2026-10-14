@@ -1,0 +1,35 @@
+# 推送到 main 时生成 dist/ 并发布到 GitHub Pages，说明见 docs/deploy-github-pages.md
+# 首次使用前：仓库 Settings → Pages → Build and deployment → Source 选择 GitHub Actions
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只发布一次；不取消进行中的发布
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v6
+      # 只复制线上文件，并核对离线缓存清单；不需要 npm install
+      - run: sh scripts/build-dist.sh
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v5

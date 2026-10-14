@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 应用图标：蓝底白色 P 停车标志；内容落在中心 80% 安全区内，可直接用作 maskable 图标 -->
+  <rect width="512" height="512" fill="#0a4ea3"/>
+  <rect x="96" y="96" width="320" height="320" rx="56" fill="none" stroke="#ffffff" stroke-width="20"/>
+  <path d="M206 360V152h76c46 0 76 26 76 66s-30 66-76 66h-34v76z M248 248h32c22 0 36-12 36-30s-14-30-36-30h-32z" fill="#ffffff" fill-rule="evenodd"/>
+</svg>

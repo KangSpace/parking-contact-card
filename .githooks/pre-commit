@@ -1,0 +1,3 @@
+#!/bin/sh
+# 提交前自动写入编译号（见 scripts/stamp-build.sh）
+exec sh "$(git rev-parse --show-toplevel)/scripts/stamp-build.sh"

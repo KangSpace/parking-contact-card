@@ -1,0 +1,15 @@
+{
+  "name": "parking-contact-card",
+  "version": "1.0.0",
+  "private": true,
+  "description": "挪车号码牌：在线制作挪车联系卡，自动排满 A4 打印或下载",
+  "license": "MIT",
+  "scripts": {
+    "build": "sh scripts/build-dist.sh",
+    "previews": "node scripts/build-previews.js",
+    "stamp": "sh scripts/stamp-build.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.59.1"
+  }
+}

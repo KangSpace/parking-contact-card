@@ -1,0 +1,21 @@
+# Cloudflare Pages 响应头（GitHub Pages 不读取此文件）；构建时由 scripts/build-dist.sh 复制到 dist/
+# 不加 X-Frame-Options / frame-ancestors：制作页在 iframe 里预览拨号页，可能是跨站点托管的 dial.html
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# 离线缓存脚本与版本号必须每次向服务器确认，否则新版本发布后浏览器迟迟拿不到
+/sw.js
+  Cache-Control: no-cache
+
+/version.js
+  Cache-Control: no-cache
+
+# 拨号页网址里带号码参数，不允许搜索引擎收录；Cloudflare 会把 /dial.html 跳转到 /dial，两个地址都要写
+/dial.html
+  X-Robots-Tag: noindex
+
+/dial
+  X-Robots-Tag: noindex

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>联系车主</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <script src="version.js"></script>
+  <style>
+    /* 扫码落地页：打开即尝试唤起拨号，失败时用大按钮兜底 */
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --fg: #0f172a;
+      --muted: #475569;
+      --accent: #2563eb;
+      --accent-fg: #ffffff;
+      --danger: #b42318;
+      /* 弱提示文字（页脚），对比度 ≥ 4.5:1 */
+      --faint: #5f6b7d;
+      --line: #e4e7ec;
+      --dot: rgba(15, 23, 42, .07);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0d12;
+        --card: #111419;
+        --fg: #e7eaf0;
+        --muted: #a1a9b8;
+        --accent: #2563eb;
+        --accent-fg: #ffffff;
+        --danger: #f97066;
+        --faint: #9099a8;
+        --line: #232833;
+        --dot: rgba(255, 255, 255, .06);
+        color-scheme: dark;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--fg);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      /* 卡片在剩余空间里居中，页脚贴在底部 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    }
+
+    main.card {
+      margin-block: auto;
+    }
+
+    .foot {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      color: var(--faint);
+      font-size: 11px;
+    }
+
+    .foot a {
+      color: inherit;
+    }
+
+    .card {
+      width: min(100%, 420px);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 12px 32px rgba(15, 23, 42, .08);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .p-sign {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      display: grid;
+      place-items: center;
+      font: 700 40px/1 "DIN Alternate", "Arial Narrow", sans-serif;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .num {
+      font: 700 40px/1.1 "DIN Alternate", "Arial Narrow", sans-serif;
+      letter-spacing: .02em;
+      font-variant-numeric: tabular-nums;
+      user-select: all;
+    }
+
+    .call {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-size: 20px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .call:focus-visible {
+      outline: 3px solid var(--fg);
+      outline-offset: 3px;
+    }
+
+    .tip {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .err {
+      color: var(--danger);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="p-sign" aria-hidden="true">P</div>
+    <h1>联系车主挪车</h1>
+    <div class="num" id="num">—</div>
+    <a class="call" id="call" href="#">拨打车主电话</a>
+    <p class="tip" id="tip">如果没有自动弹出拨号，请点上方按钮。</p>
+  </main>
+  <!-- 页脚：弱提示，告诉扫码的人这张码牌用什么生成 -->
+  <footer class="foot">
+    <span>挪车号码牌</span>
+    <span id="ver"></span>
+    <a href="./index.html">我也做一张</a>
+  </footer>
+  <script>
+    (function () {
+      // 页脚版本号（version.js 缺失时不显示）
+      if (window.PCC_VERSION) {
+        var ver = document.getElementById('ver');
+        ver.textContent = 'v' + window.PCC_VERSION + (window.PCC_BUILD ? ' (' + (window.PCC_BUILD === 'dev' ? '开发版' : window.PCC_BUILD) + ')' : '');
+        ver.title = '版本 ' + window.PCC_VERSION + (window.PCC_BUILD ? '，编译号 ' + window.PCC_BUILD : '');
+      }
+
+      // base64 参数长度上限，超长直接视为无效，不做解码
+      var MAX_B64_LEN = 256;
+
+      /**
+       * 解码 ?n= 的 base64 值，兼容 URL-safe 变体（-_）与未编码的 + 被解析成空格的情况
+       * @param {string} b64 网址参数原值
+       * @return {string} 解码后的文本；长度超限、字符非法或解码失败时返回空串
+       */
+      function decodeParam(b64) {
+        if (!b64 || b64.length > MAX_B64_LEN) return '';
+        var s = b64.replace(/ /g, '+').replace(/-/g, '+').replace(/_/g, '/');
+        if (!/^[A-Za-z0-9+\/]*={0,2}$/.test(s)) return '';
+        while (s.length % 4) s += '=';
+        try { return atob(s); } catch (e) { return ''; }
+      }
+
+      // 号码从网址参数 ?n= 读取并 base64 解码，只接受数字和开头的 +，防止拼接出非电话链接
+      var raw = decodeParam(new URLSearchParams(location.search).get('n') || '');
+      var num = raw.replace(/[^\d+]/g, '');
+      var ok = /^\+?\d{5,15}$/.test(num);
+      var numEl = document.getElementById('num');
+      var call = document.getElementById('call');
+      var tip = document.getElementById('tip');
+
+      if (!ok) {
+        numEl.textContent = '号码无效';
+        call.hidden = true;
+        tip.textContent = '二维码里的网址缺少有效号码，请联系码牌主人重新生成。';
+        tip.classList.add('err');
+        return;
+      }
+
+      var tel = 'tel:' + num;
+      numEl.textContent = /^1\d{10}$/.test(num) ? num.replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3') : num;
+      call.href = tel;
+
+      // 生成页的预览弹层里带 preview=1：只展示页面，不自动跳转拨号，点按钮也不拨号
+      if (new URLSearchParams(location.search).get('preview') === '1') {
+        tip.textContent = '预览模式：不会拨号。';
+        call.addEventListener('click', function (e) { e.preventDefault(); });
+        // 焦点在本页时按 Esc，通知生成页关闭预览弹层
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && window.parent !== window) window.parent.postMessage('pcc-dial-close', '*'); });
+        return;
+      }
+      // 微信内置浏览器不允许自动跳转 tel:，只能点按钮
+      if (/MicroMessenger/i.test(navigator.userAgent)) {
+        tip.textContent = '微信里请点上方按钮拨打。';
+        return;
+      }
+      // 系统浏览器：打开即尝试唤起拨号界面
+      location.href = tel;
+    })();
+  </script>
+</body>
+
+</html>
