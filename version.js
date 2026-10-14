@@ -5,4 +5,4 @@
  *               取当前提交哈希的前 7 位，不要手改
  */
 window.PCC_VERSION = '1.0.0';
-window.PCC_BUILD = '97e994e';
+window.PCC_BUILD = 'f9624de';

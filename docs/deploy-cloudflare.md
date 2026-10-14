@@ -44,7 +44,28 @@ Pages 的配置页只有 Build command 和 Build output directory，**没有 Dep
 4. **Environment variables** 添加 `SKIP_DEPENDENCY_INSTALL` = `1`。发布不需要任何 npm 依赖（`playwright` 只用于本地生成预览图），跳过安装能缩短构建时间。
 5. 点击 **Save and Deploy**。完成后可通过 `https://<项目名>.pages.dev/` 访问。
 
-之后每次推送到 `main` 会自动发布到生产环境；推送到其他分支会生成预览地址（`https://<分支名>.<项目名>.pages.dev/`），可在 **Settings → Builds → Branch control** 中关闭预览分支。
+### 自动发布
+
+按上面的步骤连接 Git 后，不需要手动操作，推送代码即发布：
+
+| 推送到 | 结果 |
+|---|---|
+| `main` | 自动构建并发布到生产环境（`https://<项目名>.pages.dev/` 及已绑定的自定义域名） |
+| 其他分支 | 自动构建并生成预览地址 `https://<分支名>.<项目名>.pages.dev/`，不影响生产环境；可在 **Settings → Builds → Branch control** 中关闭预览分支 |
+
+- **确认已开启**：项目 → **Settings → Builds** 中能看到关联的仓库 `parking-contact-card`，且 **Branch control** 里的生产分支自动发布（Enable automatic production branch deployments）为开启状态。用命令行上传创建的项目没有关联仓库，推送不会触发发布。
+- **查看进度**：项目 → **Deployments**，每次推送对应一条记录，显示提交哈希、构建日志和状态（Success / Failed），通常一两分钟内完成。构建失败时线上保持上一次成功的版本。
+- **核对上线版本**：页脚编译号应等于本次提交哈希的前 7 位（`git rev-parse --short=7 HEAD`）。
+- **暂停自动发布**：**Settings → Builds → Branch control** 中关闭生产分支自动发布；需要时在 **Deployments** 中手动重试或用命令行上传。
+
+只有 `scripts/build-dist.sh` 复制进 `dist/` 的文件才会被发布。在仓库根目录新增需要对外访问的文件（例如站点所有权校验文件 `fc26d371d9fc5253c4c81ccfeee70289.txt`），要同时加进该脚本的复制步骤，否则推送后访问是 404。发布后可这样核对：
+
+```sh
+curl -s https://<项目名>.pages.dev/fc26d371d9fc5253c4c81ccfeee70289.txt
+# 期望输出：ec2725b0bf567428dafd09b11863eef0107f9f41
+```
+
+> 仓库里的 `.github/workflows/pages.yml` 会在推送到 `main` 时同时发布到 GitHub Pages，与 Cloudflare 互不影响。不需要 GitHub Pages 时，在仓库 **Settings → Pages** 中关闭，或删除该工作流。
 
 ### 不连 Git：命令行直接上传
 

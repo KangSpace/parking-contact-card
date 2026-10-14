@@ -1,6 +1,6 @@
 #!/bin/sh
 # 生成发布目录 dist/：只放线上需要的文件，不含 scripts/、node_modules/、.githooks/ 等开发文件
-# 发布清单与 sw.js 的离线缓存清单（SHELL）一致，另加 _headers（Cloudflare 响应头，GitHub Pages 忽略）和 LICENSE
+# 发布清单与 sw.js 的离线缓存清单（SHELL）一致，另加 _headers（Cloudflare 响应头，GitHub Pages 忽略）、LICENSE 和站点所有权校验文件
 # 复制后逐项核对 SHELL 中的文件都在 dist/ 里，缺一个离线缓存就会安装失败，因此缺文件时直接报错退出
 # 编译号在这里写入 dist/version.js（提交哈希前 7 位），不依赖本地提交钩子
 # 用法：在仓库根目录执行 sh scripts/build-dist.sh（或 npm run build）；Cloudflare Pages / GitHub Actions 的构建命令同此
@@ -15,6 +15,8 @@ mkdir -p "$OUT/assets"
 # 2. 复制线上文件
 cp index.html dial.html version.js sw.js manifest.webmanifest LICENSE "$OUT/"
 [ -f _headers ] && cp _headers "$OUT/"
+# 站点所有权校验文件：须原样出现在站点根路径，缺失时直接报错，避免发布后校验失败
+cp fc26d371d9fc5253c4c81ccfeee70289.txt "$OUT/"
 cp -R icons "$OUT/"
 cp -R assets/preview "$OUT/assets/"
 
