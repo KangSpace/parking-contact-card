@@ -81,7 +81,7 @@
 
 纯静态文件，没有服务端代码。`npm run build` 生成只含线上文件的发布目录 `dist/`，并核对离线缓存清单。
 
-- **Cloudflare Pages**：见 [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md)（含响应头 `_headers`、自定义域名、回滚）。
+- **Cloudflare Pages / Workers**：见 [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md)（含两种接入方式、响应头 `_headers`、自定义域名、回滚）。
 - **GitHub Pages**：见 [docs/deploy-github-pages.md](docs/deploy-github-pages.md)，可通过 `https://<用户名>.github.io/parking-contact-card/` 访问。
 - **其他托管 / 自建服务器**：上传 `dist/` 的内容即可。离线缓存（Service Worker）只在 https 或 `localhost` 下生效；直接双击打开 `index.html` 也能使用，只是没有离线缓存。
 

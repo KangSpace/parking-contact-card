@@ -115,7 +115,7 @@ GitHub Pages 不支持自定义响应头，`_headers` 中的设置不生效：
 | `Referrer-Policy` | 浏览器默认 `strict-origin-when-cross-origin`，跨站只发送域名、不含 `?n=` 参数；拨号页也没有指向其他网站的链接 |
 | 拨号页不被收录 | `dial.html` 中已有 `<meta name="robots" content="noindex">`，效果相同 |
 
-需要这些响应头时，参见 [部署到 Cloudflare Pages](deploy-cloudflare.md)。
+需要这些响应头时，参见 [部署到 Cloudflare](deploy-cloudflare.md)。
 
 ## 发布后检查
 
